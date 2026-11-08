@@ -1,2 +1,17 @@
-# SDSS-DR16Q-Cosmography-Audit
-Official Python pipeline for the double-blind, agnostic cosmography audit of the SDSS DR16Q quasar catalog.
+# SDSS DR16Q Agnostic Cosmography Audit
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
+*(Note: DOI will be updated upon final Zenodo archival)*
+
+Official repository for the data analysis pipeline associated with the paper:  
+**"Anisotropic Stability in High-Redshift Quasar Distributions: A Double-Blind and Agnostic Cosmography Audit of SDSS DR16Q"**
+
+This repository contains the complete, reproducible Python codebase used to audit the deep-vacuum stratum ($1.5 \leq z \leq 2.0$) of the SDSS DR16Q catalog for macroscopic transversal gradients. The pipeline is fully model-independent, bypassing standard $\Lambda$CDM isotropic priors through extended gravity cosmography and strict orthogonal systematics cleaning.
+
+## 🛠️ Dependencies
+
+The codebase requires Python 3.9+ and the following standard scientific libraries:
+
+```bash
+pip install numpy scipy astropy matplotlib
+📂 Data RequirementsTo run this pipeline, you must download the official SDSS DR16Q Superset catalog (v3). Due to GitHub's file size limits, the FITS file is not included in this repository.Download the catalog from the official SDSS portal.Ensure the file is named DR16Q_Superset_v3.fits.Place it in the root directory of this repository alongside the scripts.🚀 Execution PipelineTo guarantee absolute mathematical reproducibility and avoid FileNotFound errors, the scripts must be executed in the logical sequence of the paper's methodology.Step 1: Orthogonal Systematics Cleaning (CRITICAL)You must run the systematics cleaner first. This script isolates the $i$-band photometry, applies the Taylor-4 longitudinal detrending, models the telescope's footprint (Object Density, Declination, Galactic Latitude, PSF Error), and projects the residuals orthogonally away from this instrumental hyperplane.Run: python 05_orthogonal_systematics_cleaning.pyOutput: Generates purified_residuals.npz (Required for Steps 2 & 3).Step 2: Statistical Validation & Stress-TestingOnce the purified residuals are generated, you can run the primary statistical audits independently:python 06_monte_carlo_spatial_shuffler.py: Runs 1,000 randomized RA-shuffles to compute the empirical background noise and exact Z-score significance ($16.25\sigma$).python 07_split_half_validator.py: Executes the 100-fold randomized bisection protocol to test for algorithmic overfitting, yielding the validation median significance on unseen data.python 08_baseline_sensitivity_matrix.py: Re-runs the entire cleaning pipeline across alternative kinematic expansions (Taylor-5, Taylor-6, Padé 2,1, and Padé 2,2) to prove functional independence (generates Table 2).Step 3: Figure GenerationGenerates the exact publication-quality vector figures used in the MNRAS manuscript.Run: python 04_generate_manras_figures.pyOutputs: fig2_montecarlo.pdf, fig3_splithalf.pdf, fig4_cmb_alignment.pdfStep 4: Pre-Cleaning Sub-Interval Consistency (Optional)Scripts 01, 02, and 03 are provided for transparent methodological auditing. They analyze the raw detrended residuals (prior to orthogonal cleaning) to map the macroscopic geometry across redshift bins, explicitly demonstrating the severe unconstrained phase shift ($\Delta\phi_0 = 92.59^\circ$) discussed in the paper's robustness check.python 01_nonlinear_phase_split_check.pypython 02_exact_linear_phase_audit.pypython 03_fixed_geometry_amplitude_consistency.py🔒 Reproducibility GuaranteeAll stochastic functions (Monte Carlo permutations and Split-Half random bisections) are hard-coded with np.random.seed(42) to ensure exact replication of the standard deviations, Z-scores, and phase alignments reported in the manuscript.
